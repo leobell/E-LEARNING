@@ -1,0 +1,76 @@
+import { useState, useEffect } from "react"
+import { Link } from "react-router-dom"
+import { useAuth } from "../../context/auth/AuthContext"
+import { getMyCourses } from "../../services/courses.service"
+import Spinner from "../../components/spinner/Spinner"
+import ErrorAlert from "../../components/errorAlert/ErrorAlert"
+
+const TeacherCourses = () => {
+  const { token } = useAuth()
+  const [courses, setCourses] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    const fetchCourses = async() => {
+      try {
+        const data = await getMyCourses(token)
+        setCourses(data.courses)
+      } catch (e) {
+        setError(e.message)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchCourses()
+  }, [])
+
+  if(isLoading){
+    return <Spinner />
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold text-primary-dark">I miei corsi</h1>
+          <Link
+            to="/teacher/courses/new"
+            className="bg-primary text-white px-4 py-2 rounded-lg font-semibold hover:bg-primary-dark"
+          >
+            + Crea nuovo corso
+          </Link>
+        </div>
+
+        <ErrorAlert message={error} />
+
+        {courses.length === 0 ? (
+          <div className="text-center py-16">
+            <p className="text-gray-500 text-lg">Non hai ancora creato nessun corso.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {courses.map((course) => (
+              <Link
+                key={course._id}
+                to={`/teacher/courses/${course._id}/edit`}
+                className="bg-surface rounded-lg shadow p-4 hover:shadow-lg transition block"
+              >
+                <img
+                  src={course.urlImg}
+                  alt={course.name}
+                  className="w-full h-32 object-cover rounded mb-2"
+                />
+                <p className="font-semibold text-primary-dark">{course.name}</p>
+                <p className="text-sm text-gray-500">{course.category}</p>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+export default TeacherCourses
