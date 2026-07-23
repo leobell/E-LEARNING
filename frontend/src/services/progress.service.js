@@ -1,7 +1,7 @@
-import { API_URL } from "./api"
+import { API_URL, apiFetch } from "./api"
 
 const getMyProgress = async (token) => {
-    const response = await fetch(`${API_URL}/progress/me`, {
+    const response = await apiFetch(`${API_URL}/progress/me`, {
         method:'GET',
         headers: {
             'Authorization':`Bearer ${token}`
@@ -18,7 +18,7 @@ const getMyProgress = async (token) => {
 }
 
 const enrollInCourse = async(idCourse, token) => {
-    const response = await fetch(`${API_URL}/courses/${idCourse}/enroll`,{
+    const response = await apiFetch(`${API_URL}/courses/${idCourse}/enroll`,{
         method:'POST',
         headers:{
             'Authorization':`Bearer ${token}`
@@ -35,7 +35,7 @@ const enrollInCourse = async(idCourse, token) => {
 }
 
 const completeLesson = async(courseId, lessonId, token) => {
-    const response = await fetch(`${API_URL}/courses/${courseId}/lessons/${lessonId}/complete`,{
+    const response = await apiFetch(`${API_URL}/courses/${courseId}/lessons/${lessonId}/complete`,{
         method:'PATCH',
         headers:{
             'Authorization':`Bearer ${token}`

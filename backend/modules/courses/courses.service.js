@@ -1,4 +1,5 @@
 const Course = require('./courses.schema')
+const Progress = require('../progress/progress.schema')
 
 const getAllCourses = async () => {
     return await Course.find()
@@ -62,7 +63,7 @@ const searchCourses = async ({ q, category, page, limit }) => {
 }
 
 const getCourseWithContent = async (id) => {
-    return await Course.findById(id)
+    const course = await Course.findById(id)
         .populate('teacher', '-password -__v')
         .populate({
             path: 'modules',
@@ -71,11 +72,33 @@ const getCourseWithContent = async (id) => {
                 select: 'name description module'
             }
         })
+
+    if (!course) return null
+
+    const enrolledCount = await Progress.countDocuments({ course: id })
+    
+    return { course, enrolledCount }
 }
 
 const getMyCourses = async (teacherId) => {
-    return await Course.find({ teacher: teacherId })
+    const courses = await Course.find({ teacher: teacherId })
         .populate('teacher', '-password -__v')
+        .populate({
+            path:'modules',
+            populate:{
+                path:'lessons',
+                select:'name'
+            }
+        })
+    
+    const coursesWithEnrollment = await Promise.all(
+        courses.map(async (course) => {
+            const enrolledCount = await Progress.countDocuments({ course: course._id })
+            return { ...course.toObject(), enrolledCount }
+        })
+    )
+
+    return coursesWithEnrollment
 }
 
 const getCourseForLearning = async (id) => {

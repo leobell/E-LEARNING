@@ -1,20 +1,21 @@
 import { useState, useEffect } from "react"
 import Spinner from "../../components/spinner/Spinner"
-import ErrorAlert from "../../components/errorAlert/ErrorAlert"
-import { useParams } from "react-router-dom"
+import { useParams, Link } from "react-router-dom"
 import { useAuth } from "../../context/auth/AuthContext"
 import { getCourseForLearning } from "../../services/courses.service"
 import { completeLesson, getMyProgress } from "../../services/progress.service"
+import { useToast } from "../../context/toast/ToastContext"
+import { Trophy } from 'lucide-react'
 
 const CourseLearn = () => {
   const { id } = useParams()
   const { token } = useAuth()
+  const { showToast } = useToast()
 
   const [course, setCourse] = useState(null)
   const [completedLessons, setCompletedLessons] = useState([])
   const [activeLesson, setActiveLesson] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState('')
   const [expandedModuleId, setExpandedModuleId] = useState(null)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [completing, setCompleting] = useState(false)
@@ -37,7 +38,7 @@ const CourseLearn = () => {
           setActiveLesson(courseData.course.modules[0].lessons[0])
         }
       } catch (e) {
-        setError(e.message)
+        showToast(e.message, 'error')
       } finally {
         setIsLoading(false)
       }
@@ -58,13 +59,20 @@ const CourseLearn = () => {
 
   const handleCompleteLesson = async() => {
     setCompleting(true)
-    setError('')
 
     try {
       await completeLesson(id, activeLesson._id, token)
+      const newCompletedLessons = [...completedLessons, activeLesson._id]
       setCompletedLessons([...completedLessons, activeLesson._id])
+
+      if (newCompletedLessons.length === totalLessons) {
+        showToast('Complimenti, hai completato il corso! 🎉')
+      } else {
+        showToast('Lezione completata!')
+      }
+      
     } catch (e) {
-      setError(e.message)
+      showToast(e.message, 'error')
     } finally {
       setCompleting(false)
     }
@@ -75,12 +83,22 @@ const CourseLearn = () => {
   }
 
   if(!course){
-    return <ErrorAlert message={error || 'Corso non trovato'} />
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <p className="text-gray-500">Corso non trovato</p>
+      </div>
+    )
   }
+
+  const totalLessons = course.modules.reduce((sum, m) => sum + m.lessons.length, 0)
+  const progressPercent = totalLessons > 0 ? Math.round((completedLessons.length / totalLessons) * 100) : 0
 
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-6xl mx-auto px-4 py-8">
+        <Link to="/dashboard" className="text-sm text-primary hover:underline mb-4 inline-block">
+          ← Torna alla dashboard
+        </Link>
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
           className="md:hidden mb-4 flex items-center gap-2 bg-surface shadow px-4 py-2 rounded-lg text-primary-dark font-semibold"
@@ -94,7 +112,27 @@ const CourseLearn = () => {
         <div className="flex flex-col md:flex-row gap-6">
           <div className={`md:w-80 bg-surface rounded-lg shadow p-4 h-fit md:block ${sidebarOpen ? 'block' : 'hidden'}`}>
             <h2 className="font-bold text-primary-dark mb-4">{course.name}</h2>
+
+            <div className="mb-4">
+              <div className="flex justify-between text-xs text-gray-500 mb-1">
+                <span>Progresso</span>
+                <span>{progressPercent}%</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div
+                  className="bg-primary h-2 rounded-full transition-all"
+                  style={{ width: `${progressPercent}%` }}
+                />
+              </div>
+            </div>
             
+            {progressPercent === 100 && (
+              <div className="mt-3 mb-3 bg-green-50 border border-green-200 rounded-lg p-3 flex items-center gap-2">
+                <Trophy className="w-5 h-5 text-green-600" />
+                <p className="text-sm text-green-700 font-medium">Corso completato! 🎉</p>
+              </div>
+            )}
+
             {course.modules.map((module) => (
               <div key={module._id} className="mb-4">
                 <button

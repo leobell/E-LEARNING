@@ -175,7 +175,7 @@ const searchCourses = async (req, res, next) => {
         const { q, category, page } = req.query
 
         const currentPage = parseInt(page) || 1
-        const limit = 20
+        const limit = 12
 
         const { courses, totalResults } = await courseService.searchCourses({ q, category, page: currentPage, limit })
 
@@ -197,16 +197,17 @@ const getCourseWithContent = async (req, res, next) => {
     try {
         const { id } = req.params
 
-        const course = await courseService.getCourseWithContent(id)
+        const result = await courseService.getCourseWithContent(id)
 
-        if(!course){
+        if(!result){
             throw new CourseNotFoundException()
         }
 
         res.status(200)
             .json({
                 statusCode:200,
-                course
+                course: result.course,
+                enrolledCount: result.enrolledCount
             })
 
     } catch (e) {

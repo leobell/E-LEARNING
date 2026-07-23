@@ -1,4 +1,4 @@
-import { API_URL } from "./api"
+import { API_URL, apiFetch } from "./api"
 
 const getLatestCourses = async () => {
     const response = await fetch(`${API_URL}/courses/latest`)
@@ -43,7 +43,7 @@ const searchCourses = async({ q, category, page }) => {
 }
 
 const getMyCourses = async(token) => {
-    const response = await fetch(`${API_URL}/courses/mine`,{
+    const response = await apiFetch(`${API_URL}/courses/mine`,{
         method: 'GET',
         headers: {
             'Authorization':`Bearer ${token}`
@@ -60,7 +60,7 @@ const getMyCourses = async(token) => {
 }
 
 const createCourse = async(body, token) => {
-    const response = await fetch(`${API_URL}/courses`,{
+    const response = await apiFetch(`${API_URL}/courses`,{
         method: 'POST',
         headers: {
             'Authorization' : `Bearer ${token}`,
@@ -79,7 +79,7 @@ const createCourse = async(body, token) => {
 }
 
 const updateCourse = async(id, body, token) => {
-    const response = await fetch(`${API_URL}/courses/${id}`,{
+    const response = await apiFetch(`${API_URL}/courses/${id}`,{
         method: 'PATCH',
         headers: {
             'Authorization' : `Bearer ${token}`,
@@ -101,7 +101,7 @@ const uploadCourseImage = async(id, file, token) => {
     const formData = new FormData()
     formData.append('image', file)
 
-    const response = await fetch(`${API_URL}/courses/${id}/image`,{
+    const response = await apiFetch(`${API_URL}/courses/${id}/image`,{
         method: 'POST',
         headers:{
             'Authorization':`Bearer ${token}`
@@ -119,7 +119,7 @@ const uploadCourseImage = async(id, file, token) => {
 }
 
 const getCourseForLearning = async(id, token) => {
-    const response = await fetch(`${API_URL}/courses/${id}/learn`,{
+    const response = await apiFetch(`${API_URL}/courses/${id}/learn`,{
         method: 'GET',
         headers:{
             'Authorization' : `Bearer ${token}`

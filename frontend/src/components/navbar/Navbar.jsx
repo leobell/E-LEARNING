@@ -1,11 +1,38 @@
-import { Link, useNavigate } from "react-router-dom"
+import { Link, useNavigate, useLocation } from "react-router-dom"
 import { useAuth } from "../../context/auth/AuthContext"
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
+import { GraduationCap } from 'lucide-react'
 
 const Navbar = () => {
     const { user, logout } = useAuth()
+    const userMenuRef = useRef(null)
     const navigate = useNavigate()
+    const location = useLocation()
     const [menuOpen, setMenuOpen] = useState(false)
+    const [userMenuOpen, setUserMenuOpen] = useState(false)
+    const [scrolled, setScrolled] = useState(false)
+    
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
+                setUserMenuOpen(false)
+            }
+        }
+
+        document.addEventListener('mousedown', handleClickOutside)
+        return () => document.removeEventListener('mousedown', handleClickOutside)
+
+    }, [])
+    useEffect(() => {
+        const handleScroll = () => {
+            setScrolled(window.scrollY > 10)
+        }
+
+        window.addEventListener('scroll', handleScroll)
+        return () => window.removeEventListener('scroll', handleScroll)
+    }, [])
+
+    const isActive = (path) => location.pathname === path
 
     const handleLogout = () => {
         logout()
@@ -13,41 +40,53 @@ const Navbar = () => {
         navigate('/')
     }
 
+    const getInitials = () => {
+        if (!user?.firstName) return '?'
+        return `${user.firstName[0]}${user.lastName?.[0] || ''}`.toUpperCase()
+    }
+
     return (
-        <nav className="bg-surface shadow px-6 py-4">
+        <nav className={`bg-surface px-6 py-4 sticky top-0 z-40 transition-shadow duration-300 ${scrolled ? 'shadow-md' : 'shadow-none'}`}>
             <div className="flex justify-between items-center">
-                <Link to="/" className="text-xl font-bold text-primary-dark">
+                <Link to="/" className="text-xl font-bold text-primary-dark flex items-center gap-2">
+                    <GraduationCap className="w-6 h-6 text-primary" />
                     E-Learning
                 </Link>
 
                 <div className="hidden md:flex gap-6 items-center">
-                    <Link to="/search" className="text-primary-dark hover:text-primary">
+                    <Link to="/search" className={`hover:text-primary ${isActive('/search') ? 'text-primary font-semibold' : 'text-primary-dark'}`}>
                         Esplora
                     </Link>
 
                     {user ? (
-                        <>
-                            {user.role === 'teacher' ? (
-                                <Link to="/teacher/courses" className="text-primary-dark hover:text-primary">
-                                    I miei corsi
-                                </Link>
-                            ) : (
-                                <Link to="/dashboard" className="text-primary-dark hover:text-primary">
-                                    Dashboard
-                                </Link>
-                            )}
+                        <div className="relative" ref={userMenuRef}>
                             <button
-                                onClick={handleLogout}
-                                className="bg-primary text-white px-4 py-2 rounded hover:bg-primary-dark"
+                                onClick={() => setUserMenuOpen(!userMenuOpen)}
+                                className="w-9 h-9 bg-primary text-white rounded-full flex items-center justify-center font-semibold text-sm"
                             >
-                                Logout
+                                {getInitials()}
                             </button>
-                        </>
+
+                            {userMenuOpen && (
+                                <div className="absolute right-0 mt-2 w-48 bg-surface rounded-lg shadow-lg py-2 z-50">
+                                    <Link
+                                        to={user.role === 'teacher' ? '/teacher/courses' : '/dashboard'}
+                                        onClick={() => setUserMenuOpen(false)}
+                                        className="block px-4 py-2 text-sm text-primary-dark hover:bg-background"
+                                    >
+                                        {user.role === 'teacher' ? 'I miei corsi' : 'Dashboard'}
+                                    </Link>
+                                    <button
+                                        onClick={handleLogout}
+                                        className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-background"
+                                    >
+                                        Logout
+                                    </button>
+                                </div>
+                            )}
+                        </div>
                     ) : (
-                        <Link
-                            to="/auth"
-                            className="bg-primary text-white px-4 py-2 rounded hover:bg-primary-dark"
-                        >
+                        <Link to="/auth" className="bg-primary text-white px-4 py-2 rounded hover:bg-primary-dark">
                             Accedi
                         </Link>
                     )}

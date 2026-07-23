@@ -23,6 +23,15 @@ const errorHandler = (err, req, res, next) => {
             })
     }
 
+    if (err.name === 'TimeoutError' || err.http_code) {
+        return res.status(504)
+            .json({
+                statusCode: 504,
+                error: 'Gateway Timeout',
+                message: 'Upload troppo lento o file troppo grande. Riprova con un file più leggero.'
+            })
+    }
+
     if (err instanceof HttpException) {
         return res.status(err.statusCode)
             .json({

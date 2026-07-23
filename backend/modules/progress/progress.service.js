@@ -59,7 +59,16 @@ const getProgress = async (courseId, studentId) => {
 
 const getAllProgressByStudent = async (studentId) => {
     return await Progress.find({ student: studentId })
-        .populate('course')
+        .populate({
+            path:'course',
+            populate:{
+                path:'modules',
+                populate:{
+                    path:'lessons',
+                    select:'name'
+                }
+            }
+        })
         .populate('lastAccessedLesson')
         .sort({ updatedAt: -1 })
 }

@@ -1,16 +1,17 @@
 import { useState, useEffect } from "react"
-import { Pencil, Trash2 } from "lucide-react"
+import { Pencil, Trash2, CheckCircle, AlertCircle } from "lucide-react"
 import { useAuth } from "../../context/auth/AuthContext"
+import { useToast } from "../../context/toast/ToastContext"
 import Spinner from "../../components/spinner/Spinner"
-import ErrorAlert from "../../components/errorAlert/ErrorAlert"
-import { useParams, useNavigate } from "react-router-dom"
-import { getCourseWithContent, createCourse, updateCourse, uploadCourseImage } from "../../services/courses.service"
+import { useParams, useNavigate, Link } from "react-router-dom"
+import { getCourseForLearning, createCourse, updateCourse, uploadCourseImage } from "../../services/courses.service"
 import { createModule, updateModule, deleteModule } from "../../services/module.service"
 import { createLesson, updateLesson, deleteLesson, uploadLessonVideo } from "../../services/lessons.service"
 
 const CourseEditor = () => {
   const { id } = useParams()
   const { token } = useAuth()
+  const { showToast } = useToast()
   const navigate = useNavigate()
   const isEditMode = Boolean(id)
 
@@ -21,7 +22,6 @@ const CourseEditor = () => {
     urlImg:''
   })
   const [isLoading, setIsLoading] = useState(isEditMode)
-  const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
   const [imageFile, setImageFile] = useState(null)
   const [imagePreview, setImagePreview] = useState(null)
@@ -52,7 +52,7 @@ const CourseEditor = () => {
     const fetchCourse = async() => {
       try {
       
-        const data = await getCourseWithContent(id)
+        const data = await getCourseForLearning(id, token)
         setFormData({
           name:data.course.name,
           description:data.course.description,
@@ -61,7 +61,7 @@ const CourseEditor = () => {
         })
         setModules(data.course.modules)
       } catch (e) {
-        setError(e.message)
+        showToast(e.message, 'error')
       } finally {
         setIsLoading(false)
       }
@@ -89,13 +89,13 @@ const CourseEditor = () => {
     if(!imageFile) return
 
     setUploadingImage(true)
-    setError('')
 
     try {
       await uploadCourseImage(id, imageFile, token)
       setImageFile(null)
+      showToast('Immagine caricata con successo')
     } catch (e) {
-      setError(e.message)
+      showToast(e.message, 'error')
     } finally {
       setUploadingImage(false)
     }
@@ -104,19 +104,21 @@ const CourseEditor = () => {
   const handleSubmit = async(e) => {
     e.preventDefault()
     setSaving(true)
-    setError('')
 
     try {
 
       const { name, description, category} = formData
       if(isEditMode){
         await updateCourse(id, { name, description, category}, token)
+        showToast('Corso aggiornato con successo')
+        navigate('/teacher/courses')
       } else {
         const data = await createCourse({ name, description, category}, token)
+        showToast('Corso creato con successo')
         navigate(`/teacher/courses/${data.newCourse._id}/edit`)
       }
     } catch (e) {
-      setError(e.message)
+      showToast(e.message, 'error')
     } finally {
       setSaving(false)
     }
@@ -126,7 +128,6 @@ const CourseEditor = () => {
     if(!newModuleName.trim()) return
 
     setAddingModule(true)
-    setError('')
     try {
       const data = await createModule(id, newModuleName, token)
       setModules([
@@ -134,20 +135,21 @@ const CourseEditor = () => {
         data.newModule
       ])
       setNewModuleName('')
+      showToast('Modulo aggiunto con successo')
     } catch (e) {
-      setError(e.message)
+      showToast(e.message, 'error')
     } finally {
       setAddingModule(false)
     }
   }
 
   const handleDeleteModule = async(moduleId) => {
-    setError('')
     try {
       await deleteModule(moduleId, token)
       setModules(modules.filter((m) => m._id !== moduleId))
+      showToast('Modulo eliminato con successo')
     } catch (e) {
-      setError(e.message)
+      showToast(e.message, 'error')
     }
   }
 
@@ -158,14 +160,14 @@ const CourseEditor = () => {
 
   const handleUpdateModule = async() => {
     if(!editingModuleName.trim()) return
-    setError('')
 
     try {
       const data = await updateModule(editingModuleId, editingModuleName, token)
       setModules(modules.map((m) => (m._id === editingModuleId ? data.updatedModule : m)))
       setEditingModuleId(null)
+      showToast('Modulo aggiornato con successo')
     } catch (e) {
-      setError(e.message)
+      showToast(e.message, 'error')
     }
   }
 
@@ -185,7 +187,6 @@ const CourseEditor = () => {
     if(!newLessonData.name.trim()) return
 
     setAddingLesson(true)
-    setError('')
 
     try {
       const data = await createLesson(moduleId, newLessonData, token)
@@ -199,8 +200,10 @@ const CourseEditor = () => {
         description:'',
         linkVideo:''
       })
+
+      showToast('Lezione aggiunta con successo')
     } catch (e) {
-      setError(e.message)
+      showToast(e.message, 'error')
     } finally {
       setAddingLesson(false)
     }
@@ -215,15 +218,15 @@ const CourseEditor = () => {
     })
   }
   const handleDeleteLesson = async(moduleId, lessonId) => {
-    setError('')
 
     try {
       await deleteLesson(lessonId, token)
       setModules(modules.map((m) => (
         m._id === moduleId ? {...m, lessons: m.lessons.filter((l) => l._id !== lessonId)} : m
       )))
+      showToast('Lezione eliminata con successo')
     } catch (e) {
-      setError(e.message)
+      showToast(e.message, 'error')
     }
   }
 
@@ -238,7 +241,6 @@ const CourseEditor = () => {
   const handleUpdateLesson = async(moduleId) => {
     if(!editingLessonData.name.trim()) return
 
-    setError('')
     try {
       const payload = {...editingLessonData}
       if(!payload.linkVideo.trim()){
@@ -252,8 +254,9 @@ const CourseEditor = () => {
       )))
       
       setEditingLessonId(null)
+      showToast('Lezione aggiornata con successo')
     } catch (e) {
-      setError(e.message)
+      showToast(e.message, 'error')
     }
   }
 
@@ -267,7 +270,6 @@ const CourseEditor = () => {
   const handleVideoUpload = async(moduleId, lessonId) => {
     if(!videoFile) return
 
-    setError('')
     setUploadingVideo(true)
 
     try {
@@ -278,8 +280,10 @@ const CourseEditor = () => {
       )))
 
       setVideoFile(null)
+
+      showToast('Video caricato con successo')
     } catch (e) {
-      setError(e.message)
+      showToast(e.message, 'error')
     } finally {
       setUploadingVideo(false)
     }
@@ -292,11 +296,12 @@ const CourseEditor = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-2xl mx-auto px-4 py-8">
+        <Link to="/teacher/courses" className="text-sm text-primary hover:underline mb-4 inline-block">
+          ← Torna ai tuoi corsi
+        </Link>
         <h1 className="text-2xl font-bold text-primary-dark mb-6">
           {isEditMode ? 'Modifica corso' : 'Crea nuovo corso'}
         </h1>
-
-        <ErrorAlert message={error} />
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <input 
@@ -441,7 +446,7 @@ const CourseEditor = () => {
                           </>
                         )}
                       </div>
-                      <div className={`overflow-hidden transition-all duration-300 ${expandedModuleId === module._id ? 'max-h-[1000px]' : 'max-h-0'}`}>
+                      <div className={`overflow-hidden transition-all duration-300 ${expandedModuleId === module._id ? 'max-h-250' : 'max-h-0'}`}>
                         <div className="px-4 py-4 bg-background">
                           {module.lessons.map((lesson) => (
                             <div 
@@ -497,6 +502,15 @@ const CourseEditor = () => {
                                 <div className="flex justify-between items-center">
                                   <div>
                                     <p className="text-primary-dark font-medium">{lesson.name}</p>
+                                    {lesson.linkVideo ? (
+                                      <span className="inline-flex items-center gap-1 bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full">
+                                        <CheckCircle className="w-3 h-3" /> Video caricato
+                                      </span>
+                                    ) : (
+                                      <span className="inline-flex items-center gap-1 bg-yellow-100 text-yellow-700 text-xs px-2 py-0.5 rounded-full">
+                                        <AlertCircle className="w-3 h-3" /> Nessun video
+                                      </span>
+                                    )}
                                     <p className="text-sm text-gray-500">{lesson.description}</p>
                                   </div>
                                   <div className="flex gap-2">

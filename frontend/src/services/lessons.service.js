@@ -1,7 +1,7 @@
-import { API_URL } from "./api"
+import { API_URL, apiFetch } from "./api"
 
 const createLesson = async(moduleId, lessonData, token) => {
-    const response = await fetch(`${API_URL}/modules/${moduleId}/lessons`, {
+    const response = await apiFetch(`${API_URL}/modules/${moduleId}/lessons`, {
         method: 'POST',
         headers: {
             'Authorization':`Bearer ${token}`,
@@ -20,7 +20,7 @@ const createLesson = async(moduleId, lessonData, token) => {
 }
 
 const updateLesson = async(id, lessonData, token) => {
-    const response = await fetch(`${API_URL}/lessons/${id}`,{
+    const response = await apiFetch(`${API_URL}/lessons/${id}`,{
         method:'PATCH',
         headers: {
             'Authorization':`Bearer ${token}`,
@@ -39,7 +39,7 @@ const updateLesson = async(id, lessonData, token) => {
 }
 
 const deleteLesson = async(id, token) => {
-    const response = await fetch(`${API_URL}/lessons/${id}`,{
+    const response = await apiFetch(`${API_URL}/lessons/${id}`,{
         method:'DELETE',
         headers: {
             'Authorization':`Bearer ${token}`
@@ -59,7 +59,7 @@ const uploadLessonVideo = async(id, file, token) => {
     const formData = new FormData()
     formData.append('video', file)
 
-    const response = await fetch(`${API_URL}/lessons/${id}/video`,{
+    const response = await apiFetch(`${API_URL}/lessons/${id}/video`,{
         method:'POST',
         headers: {
             'Authorization':`Bearer ${token}`
