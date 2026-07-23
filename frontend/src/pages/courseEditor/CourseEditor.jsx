@@ -320,7 +320,7 @@ const CourseEditor = () => {
             value={formData.description}
             onChange={onChangeInput}
             required
-            rows={4}
+            rows={5}
             className="border-2 border-primary/20 rounded-lg bg-surface  hover:border-primary/40 transition-colors focus:outline-none focus:border-primary px-4 py-3" 
           />
           <div className="relative w-fit mb-6 ml-2">
@@ -469,7 +469,7 @@ const CourseEditor = () => {
                                     placeholder="Descrizione"
                                     value={editingLessonData.description}
                                     onChange={onChangeEditingLesson}
-                                    rows={2}
+                                    rows={5}
                                     className="border-2 border-primary/20 rounded-xl bg-surface  hover:border-primary/40 transition-colors focus:outline-none focus:border-primary px-3 py-2"
                                   />
 
@@ -566,7 +566,7 @@ const CourseEditor = () => {
                               placeholder="Descrizione"
                               value={newLessonData.description}
                               onChange={onChangeNewLesson}
-                              rows={2}
+                              rows={5}
                               className="border-2 border-primary/20 rounded-xl bg-surface  hover:border-primary/40 transition-colors focus:outline-none focus:border-primary px-3 py-2"
                             />
 
