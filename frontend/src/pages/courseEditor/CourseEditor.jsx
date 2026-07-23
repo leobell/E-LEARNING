@@ -532,19 +532,19 @@ const CourseEditor = () => {
                                 </div>
                               )}
 
-                              <div className="flex items-center gap-2 mt-2">
+                              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mt-2">
                                 <input 
                                   type="file"
                                   accept="video/*"
                                   onChange={handleVideoChange}
-                                  className="text-xs flex-1"
+                                  className="text-xs flex-1 min-w-0"
                                 />
 
                                 <button
                                   type="button"
                                   onClick={() => handleVideoUpload(module._id, lesson._id)}
                                   disabled={uploadingVideo}
-                                  className="bg-primary text-white px-3 py-1 rounded-lg text-xs font-semibold hover:bg-primary-dark disabled:opacity-50"
+                                  className="bg-primary text-white px-3 py-1 rounded-lg text-xs font-semibold hover:bg-primary-dark disabled:opacity-50 shrink-0"
                                 >
                                   {uploadingVideo ? '...' : 'Carica Video'}
                                 </button>
