@@ -2,6 +2,7 @@
 
 Una piattaforma di corsi online completa ed intuitiva (stile Udemy) progettata per permettere a docenti e studenti di interagire in modo semplice e sicuro. I professori possono strutturare i propri corsi in moduli e lezioni, mentre gli studenti possono iscriversi, seguire i contenuti e monitorare i propri progressi in tempo reale.
 
+🌐 Demo Live / Link al sito: https://e-learning-indol-phi.vercel.app/
 ---
 
 ## 🚀 Funzionalità Principali
@@ -29,6 +30,7 @@ Il progetto è interamente sviluppato sfruttando i vantaggi dello **stack MERN**
 
 * **Frontend:** React.js – Per un'interfaccia utente interattiva, veloce e a componenti riutilizzabili.
 * **Backend:** Node.js & Express.js – Per la creazione di una robusta API RESTful e la gestione delle logiche di business.
+* **Styling & UI:** Tailwind CSS – Per un design moderno, completamente reattivo (responsive) e rifinito nei dettagli tramite utility classes.
 * **Database:** MongoDB – Database non relazionale (NoSQL) flessibile per la memorizzazione dei dati di utenti, corsi e progressi.
 * **Sicurezza:** JWT (JSON Web Tokens) & Bcrypt – Per la crittografia delle password e la protezione delle rotte API.
 
