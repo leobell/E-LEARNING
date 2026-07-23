@@ -184,6 +184,7 @@ const CourseLearn = () => {
                       <iframe 
                         src={getYouTubeEmbedUrl(activeLesson.linkVideo)} 
                         title={activeLesson.name}
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                         allowFullScreen
                         className="w-full h-full"
                       />

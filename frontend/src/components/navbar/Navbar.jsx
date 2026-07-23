@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from "react-router-dom"
 import { useAuth } from "../../context/auth/AuthContext"
 import { useState, useEffect, useRef } from "react"
-import { GraduationCap } from 'lucide-react'
+import { GraduationCap, ChevronDown } from 'lucide-react'
 
 const Navbar = () => {
     const { user, logout } = useAuth()
@@ -62,9 +62,12 @@ const Navbar = () => {
                         <div className="relative" ref={userMenuRef}>
                             <button
                                 onClick={() => setUserMenuOpen(!userMenuOpen)}
-                                className="w-9 h-9 bg-primary text-white rounded-full flex items-center justify-center font-semibold text-sm"
+                                className="flex items-center gap-1"
                             >
-                                {getInitials()}
+                                <div className="w-9 h-9 bg-primary text-white rounded-full flex items-center justify-center font-semibold text-sm">
+                                    {getInitials()}
+                                </div>
+                                <ChevronDown className={`w-4 h-4 text-primary-dark transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
                             </button>
 
                             {userMenuOpen && (

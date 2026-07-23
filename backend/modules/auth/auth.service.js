@@ -22,7 +22,7 @@ const login = async (email, password) => {
         role:user.role,
         firstName: user.firstName
     }, process.env.JWT_SECRET, {
-        expiresIn: '1m'
+        expiresIn: '7d'
     })
 
     return {
