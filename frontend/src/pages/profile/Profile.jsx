@@ -99,7 +99,7 @@ const Profile = () => {
             <div className="max-w-2xl mx-auto px-4 py-8">
                 <h1 className="text-2xl font-bold text-primary-dark mb-6">Il mio profilo</h1>
 
-                <Link to={user.role === 'student' ? '/dashboard' : 'teacher/courses'} className="inline-flex items-center gap-1 text-sm text-primary hover:underline mb-4">
+                <Link to={user.role === 'student' ? '/dashboard' : '/teacher/courses'} className="inline-flex items-center gap-1 text-sm text-primary hover:underline mb-4">
                     <ArrowLeft className="w-4 h-4" />
                     Torna {user.role === 'student' ? 'nella dashboard' : 'nei tuoi corsi'}
                 </Link>
