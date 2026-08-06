@@ -106,8 +106,14 @@ const TeacherCourses = () => {
               <Link
                 key={course._id}
                 to={`/teacher/courses/${course._id}/edit`}
-                className="bg-surface rounded-lg shadow p-4 hover:shadow-lg transition block"
+                className="bg-surface rounded-lg shadow p-4 hover:shadow-lg transition block relative"
               >
+                <span className={`absolute top-2 right-2 text-xs px-2 py-1 rounded-full font-semibold ${
+                  course.isPublished ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+                }`}>
+                  {course.isPublished ? 'Pubblicato' : 'Bozza'}
+                </span>
+
                 <img
                   src={course.urlImg}
                   alt={course.name}

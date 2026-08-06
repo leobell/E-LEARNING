@@ -197,17 +197,23 @@ const getCourseWithContent = async (req, res, next) => {
     try {
         const { id } = req.params
 
-        const result = await courseService.getCourseWithContent(id)
+        const course = await courseService.getCourseWithContent(id)
 
-        if(!result){
+        if(!course){
             throw new CourseNotFoundException()
         }
 
+        if (!course.isPublished) {
+            const isOwner = req.user && course.teacher._id.toString() === req.user.id
+            const isAdmin = req.user && req.user.role === 'admin'
+            if (!isOwner && !isAdmin) {
+                throw new CourseNotFoundException() 
+            }
+        }  
         res.status(200)
             .json({
                 statusCode:200,
-                course: result.course,
-                enrolledCount: result.enrolledCount
+                course
             })
 
     } catch (e) {
@@ -249,6 +255,26 @@ const getCourseForLearning = async (req, res, next) => {
     }
 }
 
+const togglePublish = async(req, res, next) => {
+    try {
+        const { id } = req.params
+        const updatedCourse = await courseService.togglePublish(id, req.user.id)
+
+        if(!updatedCourse){
+            throw new CourseNotFoundException()
+        }
+
+        res.status(200).json({
+            statusCode: 200,
+            message: updatedCourse.isPublished ? 'Course published' : 'Course unpublished',
+            updatedCourse
+        })
+
+    } catch (e) {
+        next(e)
+    }
+}
+
 module.exports = {
     getAllCourses,
     getOneCourse,
@@ -260,5 +286,6 @@ module.exports = {
     searchCourses,
     getCourseWithContent,
     getMyCourses,
-    getCourseForLearning
+    getCourseForLearning,
+    togglePublish
 }

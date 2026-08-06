@@ -71,11 +71,30 @@ const getAllProgressByStudent = async (studentId) => {
         })
         .populate('lastAccessedLesson')
         .sort({ updatedAt: -1 })
+
+    const courses = progressList.map((p) => p.course)
+    const coursesWithRatings = await attachRatings(courses)
+
+    return progressList.map((p, index) => ({
+        ...p.toObject(),
+        course: coursesWithRatings[index]
+    }))
+}
+
+const unenrollFromCourse = async (courseId, studentId) => {
+    const deleted = await Progress.findOneAndDelete({ course: courseId, student: studentId })
+
+    if (!deleted) {
+        throw new NotEnrolledException()
+    }
+
+    return deleted
 }
 
 module.exports = {
     enrollStudent,
     completeLesson,
     getProgress,
-    getAllProgressByStudent
+    getAllProgressByStudent,
+    unenrollFromCourse
 }

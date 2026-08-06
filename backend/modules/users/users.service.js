@@ -15,11 +15,12 @@ const createUser = async ({ firstName, lastName, email, password, role }) => {
 }
 
 const updateUser = async (id, { firstName, lastName }) => {
-    return await User.findByIdAndUpdate(id, 
+    return await User.findByIdAndUpdate(
+        id, 
         { firstName, lastName }, {
-            returnDocument: 'after', 
+            new: true, 
             runValidators: true 
-        })
+        }).select('-password')
 }
 
 const deleteUser = async (id) => {
@@ -27,7 +28,7 @@ const deleteUser = async (id) => {
 }
 
 const getMe = async (userId) => {
-    return await User.findById(userId).select('-password -__v')
+    return await User.findById(userId).select('-password')
 }
 
 module.exports = {

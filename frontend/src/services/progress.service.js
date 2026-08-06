@@ -51,4 +51,25 @@ const completeLesson = async(courseId, lessonId, token) => {
     return data
 }
 
-export { getMyProgress, enrollInCourse, completeLesson }
+const unenrollFromCourse = async (courseId, token) => {
+    const response = await fetch(`${API_URL}/courses/${courseId}/enroll`, {
+        method: 'DELETE',
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    })
+
+    const data = await response.json()
+
+    if (!response.ok) {
+        throw new Error(data.message || 'Failed to unenroll')
+    }
+
+    return data
+}
+
+export { getMyProgress, 
+    enrollInCourse, 
+    completeLesson,
+    unenrollFromCourse
+}

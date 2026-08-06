@@ -74,9 +74,26 @@ const getAllProgressByStudent = async(req, res, next) => {
     }
 }
 
+const unenroll = async (req, res, next) => {
+    try {
+        const { courseId } = req.params
+        const studentId = req.user.id
+
+        await progressService.unenrollFromCourse(courseId, studentId)
+
+        res.status(200).json({
+            statusCode: 200,
+            message: 'Unenrolled successfully'
+        })
+    } catch (e) {
+        next(e)
+    }
+}
+
 module.exports = {
     enroll,
     completeLesson,
     getProgress,
-    getAllProgressByStudent
+    getAllProgressByStudent,
+    unenroll
 }

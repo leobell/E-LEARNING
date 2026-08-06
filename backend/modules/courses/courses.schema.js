@@ -35,7 +35,11 @@ const courseSchema = new mongoose.Schema({
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Module'
         }  
-    ]
+    ],
+    isPublished: {
+        type: Boolean,
+        default: false
+    }
 }, { timestamps: true, strict: true })
 
 module.exports = mongoose.model('Course', courseSchema)

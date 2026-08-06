@@ -67,10 +67,9 @@ const createNewUser = async (req, res, next) => {
 
 const updateUser = async (req, res, next) => {
     try {
-        const { id } = req.params
         const { firstName, lastName } = req.body
 
-        const userUpdated = await userService.updateUser(id, { firstName, lastName })
+        const userUpdated = await userService.updateUser(req.user.id, { firstName, lastName })
 
         if(!userUpdated) {
             throw new UserNotFoundException()

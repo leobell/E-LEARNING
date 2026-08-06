@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react"
 import Spinner from "../../components/spinner/Spinner"
-import { useParams, Link } from "react-router-dom"
+import { useParams, Link, useNavigate } from "react-router-dom"
 import { useAuth } from "../../context/auth/AuthContext"
 import { getCourseForLearning } from "../../services/courses.service"
-import { completeLesson, getMyProgress } from "../../services/progress.service"
+import { completeLesson, getMyProgress, unenrollFromCourse } from "../../services/progress.service"
 import { useToast } from "../../context/toast/ToastContext"
 import { Trophy } from 'lucide-react'
 
@@ -19,6 +19,8 @@ const CourseLearn = () => {
   const [expandedModuleId, setExpandedModuleId] = useState(null)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [completing, setCompleting] = useState(false)
+  const [confirmUnenroll, setConfirmUnenroll] = useState(false)
+  const navigate = useNavigate()
 
   useEffect(() => {
     const fetchData = async() => {
@@ -75,6 +77,16 @@ const CourseLearn = () => {
       showToast(e.message, 'error')
     } finally {
       setCompleting(false)
+    }
+  }
+
+  const handleUnenroll = async () => {
+    try {
+      await unenrollFromCourse(id, token)
+      showToast('Ti sei disiscritto dal corso')
+      navigate('/dashboard')
+    } catch (e) {
+      showToast(e.message, 'error')
     }
   }
 
@@ -170,6 +182,36 @@ const CourseLearn = () => {
                 </div>
               </div>
             ))}
+            <div className="mt-4 pt-4 border-t">
+              {!confirmUnenroll ? (
+                <button
+                  onClick={() => setConfirmUnenroll(true)}
+                  className="text-sm text-red-500 hover:underline"
+                >
+                  Disiscriviti dal corso
+                </button>
+              ) : (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                  <p className="text-xs text-red-700 mb-2">
+                    Perderai il tuo progresso su questo corso. Continuare?
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleUnenroll}
+                      className="bg-red-600 text-white px-3 py-1.5 rounded text-xs font-semibold hover:bg-red-700"
+                    >
+                      Sì, disiscrivimi
+                    </button>
+                    <button
+                      onClick={() => setConfirmUnenroll(false)}
+                      className="border px-3 py-1.5 rounded text-xs"
+                    >
+                      Annulla
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
           
           <div className="flex-1 bg-surface rounded-lg shadow p-6">

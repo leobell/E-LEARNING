@@ -135,6 +135,40 @@ const getCourseForLearning = async(id, token) => {
     return data
 }
 
+const deleteCourse = async(id, token) => {
+    const response = await apiFetch(`${API_URL}/courses/${id}`, {
+        method: 'DELETE',
+        headers: {
+            'Authorization' : `Bearer ${token}`
+        }
+    })
+
+    const data = await response.json()
+
+    if(!response.ok){
+        throw new Error(data.message || 'Failed to delete course')
+    }
+
+    return data
+}
+
+const togglePublish = async(id, token) => {
+    const response = await fetch(`${API_URL}/courses/${id}/toggle-publish`, {
+        method:'PATCH',
+        headers:{
+            'Authorization':`Bearer ${token}`
+        }
+    })
+
+    const data = response.json()
+
+    if(!response.ok){
+        throw new Error(data.message || 'Failed to toggle publish status')
+    }
+
+    return data
+}
+
 export { 
     getLatestCourses, 
     getCourseWithContent, 
@@ -142,6 +176,8 @@ export {
     getMyCourses, 
     createCourse, 
     updateCourse,
+    deleteCourse,
     uploadCourseImage,
-    getCourseForLearning
+    getCourseForLearning,
+    togglePublish
 }

@@ -15,6 +15,7 @@ const courseRoute = require('./modules/courses/courses.route')
 const moduleRoute = require('./modules/module/module.route')
 const lessonRoute = require('./modules/lessons/lessons.route')
 const progressRoute = require('./modules/progress/progress.route')
+const reviewRoute = require('./modules/review/review.route')
 
 server.use(cors({
     origin: process.env.FRONTEND_URL,
@@ -29,6 +30,7 @@ server.use('/', courseRoute)
 server.use('/', moduleRoute)
 server.use('/', lessonRoute)
 server.use('/', progressRoute)
+server.use('/', reviewRoute)
 
 server.use(errorHandler)
 

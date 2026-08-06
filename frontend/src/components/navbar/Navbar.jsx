@@ -79,6 +79,13 @@ const Navbar = () => {
                                     >
                                         {user.role === 'teacher' ? 'I miei corsi' : 'Dashboard'}
                                     </Link>
+                                    <Link
+                                        to={'/profile'}
+                                        onClick={() => setUserMenuOpen(false)}
+                                        className="block px-4 py-2 text-sm text-primary-dark hover:bg-background"
+                                    >
+                                        Profilo
+                                    </Link>
                                     <button
                                         onClick={handleLogout}
                                         className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-background"

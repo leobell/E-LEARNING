@@ -1,5 +1,7 @@
 const Lesson = require('./lessons.schema')
 const Module = require('../module/module.schema')
+const Progress = require('../progress/progress.schema')
+const cloudinary = require('../../config/cloudinary')
 
 const createLesson = async (moduleId, courseId, { name, linkVideo, description }) => {
     const newLesson = new Lesson({ name, linkVideo, description, module: moduleId, course: courseId })
@@ -26,11 +28,20 @@ const updateLesson = async(id, body) =>{
 }
 
 const deleteLesson = async (id) => {
-    const deletedLesson = await Lesson.findByIdAndDelete(id)
+    const lessonToDelete = await Lesson.findById(id)
+    if (!lessonToDelete) return null
 
-    if (deletedLesson) {
-        await Module.findByIdAndUpdate(deletedLesson.module, { $pull: { lessons: id } })
+    if (lessonToDelete.videoPublicId) {
+        await cloudinary.uploader.destroy(lessonToDelete.videoPublicId, { resource_type: 'video' }).catch(() => null)
     }
+
+    await Progress.updateMany(
+        { course: lessonToDelete.course },
+        { $pull: { completedLessons: id } }
+    )
+
+    const deletedLesson = await Lesson.findByIdAndDelete(id)
+    await Module.findByIdAndUpdate(deletedLesson.module, { $pull: { lessons: id } })
 
     return deletedLesson
 }

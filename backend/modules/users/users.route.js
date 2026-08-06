@@ -10,7 +10,7 @@ users.get('/users/:id', verifyToken, userController.getUser)
 
 users.post('/users/register', userController.createNewUser)
 
-users.patch('/users/:id', verifyToken, userController.updateUser)
+users.patch('/users/me', verifyToken, userController.updateUser)
 
 users.delete('/users/:id', verifyToken, userController.deleteUser)
 

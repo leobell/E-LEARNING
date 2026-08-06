@@ -12,6 +12,8 @@ import TeacherCourses from "./pages/teacherCourses/TeacherCourses"
 import Dashboard from "./pages/dashboard/Dashboard"
 import Navbar from "./components/navbar/Navbar"
 import Footer from "./components/footer/Footer"
+import Profile from "./pages/profile/Profile"
+import ResetPassword from "./pages/resetPassword/ResetPassword"
 
 
 const App = () => {
@@ -44,6 +46,8 @@ const App = () => {
           <Route path="/teacher/courses" element={<TeacherCourses />} />
           <Route path="/teacher/courses/new" element={<CourseEditor />} />
           <Route path="/teacher/courses/:id/edit" element={<CourseEditor />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
         </Routes>
       </main>
       <Footer />

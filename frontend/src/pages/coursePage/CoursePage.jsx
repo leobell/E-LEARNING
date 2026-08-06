@@ -6,6 +6,9 @@ import { enrollInCourse, getMyProgress } from "../../services/progress.service"
 import Spinner from "../../components/spinner/Spinner"
 import ErrorAlert from "../../components/errorAlert/ErrorAlert"
 import { BookOpen } from 'lucide-react'
+import { useToast } from "../../context/toast/ToastContext"
+import StarRating from "../../components/starRating/StarRating"
+import { getReviewsByCourse, createReview, updateReview, deleteReview } from "../../services/reviews.service"
 
 const CoursePage = () => {
   const navigate = useNavigate()
@@ -18,7 +21,72 @@ const CoursePage = () => {
   const [isEnrolled, setIsEnrolled] = useState(false)
   const [enrolling, setEnrolling] = useState(false)
   const [enrolledCount, setEnrolledCount] = useState(0)
+  const { showToast } = useToast()
+  const [reviews, setReviews] = useState([])
+  const [reviewForm, setReviewForm] = useState({ rating: 0, comment: '' })
+  const [submittingReview, setSubmittingReview] = useState(false)
+  const [editingReviewId, setEditingReviewId] = useState(null)
   
+  useEffect(() => {
+    const fetchReviews = async() => {
+      try {
+        const data = await getReviewsByCourse(id)
+        setReviews(data.reviews)
+      } catch (e) {
+        showToast(e.message, 'error')
+      }
+    }
+
+    fetchReviews()
+  }, [id])
+
+  const myReview = reviews.find((r) => r.student._id === user?.id)
+
+  const handleSubmitReview = async (e) => {
+    e.preventDefault()
+
+    if (reviewForm.rating === 0) {
+      showToast('Seleziona una valutazione', 'error')
+      return
+    }
+
+    setSubmittingReview(true)
+
+    try {
+      if (editingReviewId) {
+        const data = await updateReview(editingReviewId, reviewForm, token)
+        setReviews(reviews.map((r) => (r._id === editingReviewId ? { ...data.updatedReview, student: r.student } : r)))
+        showToast('Recensione aggiornata')
+      } else {
+        const data = await createReview(id, reviewForm, token)
+        setReviews([{ ...data.newReview, student: { _id: user.id, firstName: user.firstName, lastName: user.lastName } }, ...reviews])
+        showToast('Recensione pubblicata')
+      }
+
+      setReviewForm({ rating: 0, comment: '' })
+      setEditingReviewId(null)
+    } catch (e) {
+      showToast(e.message, 'error')
+    } finally {
+      setSubmittingReview(false)
+    }
+  }
+
+  const startEditReview = (review) => {
+    setEditingReviewId(review._id)
+    setReviewForm({ rating: review.rating, comment: review.comment })
+  }
+
+  const handleDeleteReview = async (reviewId) => {
+    try {
+      await deleteReview(reviewId, token)
+      setReviews(reviews.filter((r) => r._id !== reviewId))
+      showToast('Recensione eliminata')
+    } catch (e) {
+      showToast(e.message, 'error')
+    }
+  }
+
   const toggleModule = (moduleId) => {
     setOpenModuleId(moduleId === openModuleId ? null : moduleId)
   }
@@ -84,6 +152,10 @@ const CoursePage = () => {
 
   const totalLessons = course.modules.reduce((sum, m) => sum + m.lessons.length, 0)
 
+  const averageRating = reviews.length > 0
+    ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
+    : null
+  
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-4xl mx-auto px-4 py-8">
@@ -121,8 +193,6 @@ const CoursePage = () => {
             </p>
           </div>
         )}
-
-        
         
         <div className="mt-8 relative">
           <h2 className="text-xl font-bold text-primary-dark mb-4">Contenuto del corso</h2>
@@ -179,6 +249,111 @@ const CoursePage = () => {
               >
                 {enrolling ? 'Iscrizione in corso...' : 'Iscriviti'}
               </button>
+            )}
+          </div>
+        </div>
+
+        <div className="mt-10">
+          <h2 className="text-xl font-bold text-primary-dark mb-4">Recensioni</h2>
+
+          {averageRating && (
+            <div className="flex items-center gap-3 mb-6">
+              <span className="text-3xl font-bold text-primary-dark">{averageRating}</span>
+              <div>
+                <StarRating rating={Math.round(averageRating)} readOnly />
+                <p className="text-sm text-gray-500">{reviews.length} recensioni</p>
+              </div>
+            </div>
+          )}
+
+          {isEnrolled && !myReview && (
+            <form onSubmit={handleSubmitReview} className="bg-surface rounded-lg shadow p-4 mb-6">
+              <p className="text-sm font-medium text-primary-dark mb-2">Lascia una recensione</p>
+
+              <StarRating 
+                rating={reviewForm.rating}
+                onChange={(star) => setReviewForm({...reviewForm, rating: star })}
+              />
+
+              <textarea 
+                value={reviewForm.comment}
+                onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })}
+                placeholder="Scrivi la tua opinione sul corso..."
+                required
+                rows={4}
+                className="w-full border-2 border-primary/20 rounded-lg px-4 py-2 mt-3 focus:outline-none focus:border-primary"
+              />
+
+              <button
+                type="submit"
+                disabled={submittingReview}
+                className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-semibold mt-3 hover:bg-primary-dark disabled:opacity-50"
+              >
+                {submittingReview ? 'Invio...' : 'Pubblica recensione'}
+              </button>
+            </form>
+          )}
+
+          {editingReviewId && (
+            <form onSubmit={handleSubmitReview} className="bg-surface rounded-lg shadow p-4 mb-6">
+              <p className="text-sm font-medium text-primary-dark mb-2">Modifica la tua recensione</p>
+              <StarRating 
+                rating={reviewForm.rating}
+                onChange={(star) => setReviewForm({ ...reviewForm, rating: star })}
+              />
+              <textarea 
+                value={reviewForm.comment}
+                onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })}
+                required
+                rows={4}
+                className="w-full border-2 border-primary/20 rounded-lg px-4 py-2 mt-3 focus:outline-none focus:border-primary"
+              />
+              <div className="flex gap-2 mt-3">
+                <button
+                  type="submit"
+                  disabled={submittingReview}
+                  className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-primary-dark disabled:opacity-50"
+                >
+                  Salva modifiche
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setEditingReviewId(null); setReviewForm({ rating: 0, comment: '' }) }}
+                  className="border px-4 py-2 rounded-lg text-sm"
+                >
+                  Anulla
+                </button>
+              </div>
+            </form>
+          )}
+
+          <div className="flex flex-col gap-3">
+            {reviews.map((review) => (
+              <div key={review._id} className="bg-surface rounded-lg shadow p-4">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="font-semibold text-primary-dark text-sm">
+                      {review.student.firstName} {review.student.lastName}
+                    </p>
+                    <StarRating rating={review.rating} readOnly />
+                  </div>
+                  {review.student._id === user?.id && !editingReviewId && (
+                    <div className="flex gap-2">
+                      <button onClick={() => startEditReview(review)} className="text-xs text-primary hover:underline">
+                        Modifica
+                      </button>
+                      <button onClick={() => handleDeleteReview(review._id)} className="text-xs text-red-500 hover:underline">
+                        Elimina
+                      </button>
+                    </div>
+                  )}
+                </div>
+                <p className="text-sm text-gray-600 mt-2">{review.comment}</p>
+              </div>
+            ))}
+
+            {reviews.length === 0 && (
+              <p className="text-sm text-gray-500">Nessuna recensione per questo corso.</p>
             )}
           </div>
         </div>

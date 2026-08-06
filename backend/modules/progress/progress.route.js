@@ -9,4 +9,5 @@ progress.patch('/courses/:courseId/lessons/:lessonId/complete', verifyToken, res
 progress.get('/courses/:courseId/progress', verifyToken, progressController.getProgress)
 progress.get('/progress/me', verifyToken, restrictTo('student'), progressController.getAllProgressByStudent)
 
+progress.delete('/courses/:courseId/enroll', verifyToken, restrictTo('student'), progressController.unenroll)
 module.exports = progress

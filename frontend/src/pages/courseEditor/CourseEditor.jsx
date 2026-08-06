@@ -4,7 +4,7 @@ import { useAuth } from "../../context/auth/AuthContext"
 import { useToast } from "../../context/toast/ToastContext"
 import Spinner from "../../components/spinner/Spinner"
 import { useParams, useNavigate, Link } from "react-router-dom"
-import { getCourseForLearning, createCourse, updateCourse, uploadCourseImage } from "../../services/courses.service"
+import { getCourseForLearning, createCourse, updateCourse, uploadCourseImage, deleteCourse, togglePublish } from "../../services/courses.service"
 import { createModule, updateModule, deleteModule } from "../../services/module.service"
 import { createLesson, updateLesson, deleteLesson, uploadLessonVideo } from "../../services/lessons.service"
 
@@ -19,7 +19,8 @@ const CourseEditor = () => {
     name:'',
     description:'',
     category:'',
-    urlImg:''
+    urlImg:'',
+    isPublished: false
   })
   const [isLoading, setIsLoading] = useState(isEditMode)
   const [saving, setSaving] = useState(false)
@@ -46,6 +47,7 @@ const CourseEditor = () => {
   })
   const [videoFile, setVideoFile] = useState(null)
   const [uploadingVideo, setUploadingVideo] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
 
   useEffect(() => {
     if(!isEditMode) return
@@ -57,7 +59,8 @@ const CourseEditor = () => {
           name:data.course.name,
           description:data.course.description,
           category:data.course.category,
-          urlImg: data.course.urlImg
+          urlImg: data.course.urlImg,
+          isPublished: data.course.isPublished
         })
         setModules(data.course.modules)
       } catch (e) {
@@ -75,6 +78,16 @@ const CourseEditor = () => {
       ...formData,
       [name]: value
     })
+  }
+
+  const handleDeleteCourse = async() => {
+    try {
+      await deleteCourse(id, token)
+      showToast('Corso eliminato con successo')
+      navigate('/teacher/courses')
+    } catch (e) {
+      showToast(e.message, 'error')
+    }
   }
 
   const handleImageChange = (e) => {
@@ -289,6 +302,17 @@ const CourseEditor = () => {
     }
   }
 
+  const handleTogglePublish = async() => {
+    try {
+      const data = await togglePublish(id, token)
+      setFormData({ ...formData, isPublished: data.updatedCourse.isPublished })
+      showToast(data.message)
+    } catch (e) {
+      showToast(e.message, 'error')
+    }
+    
+  }
+
   if(isLoading){
     return <Spinner />
   }
@@ -302,6 +326,30 @@ const CourseEditor = () => {
         <h1 className="text-2xl font-bold text-primary-dark mb-6">
           {isEditMode ? 'Modifica corso' : 'Crea nuovo corso'}
         </h1>
+
+        {isEditMode && (
+          <div className="flex items-center justify-between bg-surface rounded-lg shadow p-4 mb-6">
+            <div>
+              <p className="font-semibold text-primary-dark">
+                {formData.isPublished ? 'Corso pubblicato' : 'Corso in bozza'}
+              </p>
+              <p className="text-sm text-gray-500">
+                {formData.isPublished ? 'Visibile a tutti gli studenti' : 'Visibile solo a te finché non lo pubblichi'}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleTogglePublish}
+              className={`px-4 py-2 rounded-lg text-sm font-semibold ${
+                formData.isPublished 
+                ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                : 'bg-primary text-white hover:bg-primary-dark'
+              }`}
+            >
+              {formData.isPublished ? 'Rendi bozza' : 'Pubblica corso'}
+            </button>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <input 
@@ -624,6 +672,46 @@ const CourseEditor = () => {
             {saving ? 'Salvataggio...' : isEditMode ? 'Salva modifiche' : 'Crea corso'}
           </button>
         </form>
+
+        {isEditMode && (
+          <div className="mt-10 border-t pt-6">
+            <h3 className="text-sm font-semibold text-red-600 mb-2">Zona pericolosa!!</h3>
+
+            {!confirmDelete ? (
+              <button
+                type="button"
+                onClick={() => setConfirmDelete(true)}
+                className="flex items-center gap-2 text-red-600 border border-red-200 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-red-50"
+              >
+                <Trash2 className="w-4 h-4" />
+                Elimina corso
+              </button>
+            ) : (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <p className="text-sm text-red-700 mb-3">
+                  Sei sicuro di voler eliminare questo corso? L'azione è irreversibile: verranno rimossi tutti i moduli, le lezioni e le iscrizioni degli studenti a questo corso.
+                </p>
+
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={handleDeleteCourse}
+                    className="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-red-700"
+                  >
+                    Si, elimina definitivamente
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setConfirmDelete(false)}
+                    className="border px-4 py-2 rounded-lg text-sm"
+                  >
+                    Annulla
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   )

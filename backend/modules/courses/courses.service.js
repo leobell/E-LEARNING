@@ -1,5 +1,10 @@
 const Course = require('./courses.schema')
 const Progress = require('../progress/progress.schema')
+const Module = require('../module/module.schema')
+const Lesson = require('../lessons/lessons.schema')
+const attachRatings = require('../../utils/attachRatings')
+const cloudinary = require('../../config/cloudinary')
+const UserNotAllowedException = require('../../exceptions/restrictionUserRole/UserNotAllowedException')
 
 const getAllCourses = async () => {
     return await Course.find()
@@ -24,18 +29,44 @@ const updateCourse = async (id, body) => {
 }
 
 const deleteCourse = async (id) => {
-  return await Course.findByIdAndDelete(id)
+    const course = await Course.findById(id)
+    if(!course) return null
+
+    const modules = await Module.find({ course: id })
+    const modulesIds = modules.map((m) => m._id)
+
+    const lessons = await Lesson.find({ module: { $in: modulesIds } })
+    const videoPublicIds = lessons
+        .map((l) => l.videoPublicId)
+        .filter(Boolean)
+    
+    await Promise.all(
+        videoPublicIds.map((publicId) => cloudinary.uploader.destroy(publicId, { resource_type: 'video' }).catch(() => null))
+    )
+
+    if(course.imagePublicId){
+        await cloudinary.uploader.destroy(course.imagePublicId, { resource_type: 'image' })
+    }
+
+    await Progress.deleteMany({ course: id })
+    await Lesson.deleteMany({ module: { $in: modulesIds } })
+    await Module.deleteMany({ course: id })
+    const deletedCourse = await Course.findByIdAndDelete(id)
+
+    return deletedCourse
 }
 
 const getLatestCourses = async() => {
-    return await Course.find()
+    const courses = await Course.find({ isPublished: true })
         .populate('teacher', '-password -__v')
         .sort({ createdAt: -1 })
         .limit(6)
+
+    return await attachRatings(courses)
 }
 
 const searchCourses = async ({ q, category, page, limit }) => {
-    const filter = {}
+    const filter = { isPublished: true }
 
     if(q){
         filter.$or = [
@@ -59,7 +90,9 @@ const searchCourses = async ({ q, category, page, limit }) => {
         Course.countDocuments(filter)
     ])
 
-    return { courses, totalResults }
+    const coursesWithRatings = await attachRatings(courses)
+
+    return { courses: coursesWithRatings, totalResults }
 }
 
 const getCourseWithContent = async (id) => {
@@ -98,7 +131,7 @@ const getMyCourses = async (teacherId) => {
         })
     )
 
-    return coursesWithEnrollment
+    return await attachRatings(coursesWithEnrollment)
 }
 
 const getCourseForLearning = async (id) => {
@@ -112,6 +145,18 @@ const getCourseForLearning = async (id) => {
         })
 }
 
+const togglePublish = async(id, teacherId) => {
+    const course = await Course.findById(id)
+    if(!course) return null
+
+    if(course.teacher.toString() !== teacherId){
+        throw new UserNotAllowedException()
+    }
+
+    course.isPublished = !course.isPublished
+    return await course.save()
+}
+
 module.exports = {
     getAllCourses,
     getOneCourse,
@@ -122,5 +167,6 @@ module.exports = {
     searchCourses,
     getCourseWithContent,
     getMyCourses,
-    getCourseForLearning
+    getCourseForLearning,
+    togglePublish
 }

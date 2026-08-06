@@ -18,6 +18,8 @@ courses.post('/courses', verifyToken, restrictTo('teacher', 'admin'), courseCont
 courses.post('/courses/:id/image', verifyToken, restrictTo('teacher', 'admin'), upload.single('image'), courseController.uploadCourseImage)
 
 courses.patch('/courses/:id', verifyToken, restrictTo('teacher', 'admin'), courseController.updateCourse)
+courses.patch('/courses/:id/toggle-publish', verifyToken, restrictTo('teacher', 'admin'), courseController.togglePublish)
+
 courses.delete('/courses/:id', verifyToken, restrictTo('teacher', 'admin'), courseController.deleteCourse)
 
 module.exports = courses
