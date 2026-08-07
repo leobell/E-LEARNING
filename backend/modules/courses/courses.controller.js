@@ -197,25 +197,27 @@ const getCourseWithContent = async (req, res, next) => {
     try {
         const { id } = req.params
 
-        const course = await courseService.getCourseWithContent(id)
+        const result = await courseService.getCourseWithContent(id)
 
-        if(!course){
+        if (!result) {
             throw new CourseNotFoundException()
         }
+
+        const { course, enrolledCount } = result
 
         if (!course.isPublished) {
             const isOwner = req.user && course.teacher._id.toString() === req.user.id
             const isAdmin = req.user && req.user.role === 'admin'
             if (!isOwner && !isAdmin) {
-                throw new CourseNotFoundException() 
+                throw new CourseNotFoundException()
             }
-        }  
-        res.status(200)
-            .json({
-                statusCode:200,
-                course
-            })
+        }
 
+        res.status(200).json({
+            statusCode: 200,
+            course,
+            enrolledCount
+        })
     } catch (e) {
         next(e)
     }
