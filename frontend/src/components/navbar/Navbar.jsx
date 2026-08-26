@@ -121,6 +121,14 @@ const Navbar = () => {
                     Esplora
                 </Link>
 
+                <Link
+                    to={'/profile'}
+                    onClick={() => setMenuOpen(false)}
+                    className="text-primary-dark"
+                >
+                    Profilo
+                </Link>
+
                 {user ? (
                     <>
                         {user.role === 'teacher' ? (
