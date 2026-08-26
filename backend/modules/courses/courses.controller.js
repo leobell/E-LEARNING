@@ -277,6 +277,40 @@ const togglePublish = async(req, res, next) => {
     }
 }
 
+const togglePrivate = async(req, res, next) => {
+    try {
+        const { id } = req.params
+        const updatedCourse = await courseService.togglePrivate(id, req.user.id)
+
+        if(!updatedCourse){
+            throw new CourseNotFoundException()
+        }
+
+        res.status(200)
+            .json({
+                statusCode: 200,
+                message: updatedCourse.isPrivate ? 'Course is now private' : 'Course is now open',
+                updatedCourse
+            })
+    } catch (e) {
+        next(e)
+    }
+}
+
+const findByAccessCode = async (req, res, next) => {
+    try {
+        const { code } = req.body
+        const course = await courseService.findByAccessCode(code)
+
+        res.status(200).json({
+            statusCode: 200,
+            courseId: course._id
+        })
+    } catch (e) {
+        next(e)
+    }
+}
+
 module.exports = {
     getAllCourses,
     getOneCourse,
@@ -289,5 +323,7 @@ module.exports = {
     getCourseWithContent,
     getMyCourses,
     getCourseForLearning,
-    togglePublish
+    togglePublish,
+    togglePrivate,
+    findByAccessCode
 }

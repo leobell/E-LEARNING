@@ -5,6 +5,8 @@ const Lesson = require('../lessons/lessons.schema')
 const attachRatings = require('../../utils/attachRatings')
 const cloudinary = require('../../config/cloudinary')
 const UserNotAllowedException = require('../../exceptions/restrictionUserRole/UserNotAllowedException')
+const CourseNotFoundException = require('../../exceptions/course/CourseNotFoundException')
+const crypto = require('crypto')
 
 const getAllCourses = async () => {
     return await Course.find()
@@ -57,7 +59,7 @@ const deleteCourse = async (id) => {
 }
 
 const getLatestCourses = async() => {
-    const courses = await Course.find({ isPublished: true })
+    const courses = await Course.find({ isPublished: true, isPrivate: false })
         .populate('teacher', '-password -__v')
         .sort({ createdAt: -1 })
         .limit(6)
@@ -66,7 +68,7 @@ const getLatestCourses = async() => {
 }
 
 const searchCourses = async ({ q, category, page, limit }) => {
-    const filter = { isPublished: true }
+    const filter = { isPublished: true, isPrivate: false }
 
     if(q){
         filter.$or = [
@@ -157,6 +159,31 @@ const togglePublish = async(id, teacherId) => {
     return await course.save()
 }
 
+const togglePrivate = async(id, teacherId) => {
+    const course = await Course.findById(id)
+    if(!course) return null
+
+    if(course.teacher.toString() !== teacherId){
+        throw new UserNotAllowedException()
+    }
+
+    course.isPrivate = !course.isPrivate
+
+    if (course.isPrivate && !course.accessCode){
+        course.accessCode = crypto.randomBytes(4).toString('hex').toUpperCase()
+    }
+
+    return await course.save()
+}
+
+const findByAccessCode = async (accessCode) => {
+    const course = await Course.findOne({ accessCode: accessCode.toUpperCase(), isPrivate: true })
+    if (!course) {
+        throw new CourseNotFoundException()
+    }
+    return course
+}
+
 module.exports = {
     getAllCourses,
     getOneCourse,
@@ -168,5 +195,7 @@ module.exports = {
     getCourseWithContent,
     getMyCourses,
     getCourseForLearning,
-    togglePublish
+    togglePublish,
+    togglePrivate,
+    findByAccessCode
 }

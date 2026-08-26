@@ -1,17 +1,25 @@
 const Progress = require('./progress.schema')
 const Lesson = require('../lessons/lessons.schema')
 const Course = require('../courses/courses.schema')
+const attachRatings = require('../../utils/attachRatings')
 const CourseNotFoundException = require('../../exceptions/course/CourseNotFoundException')
 const AlreadyEnrolledException = require('../../exceptions/progress/AlreadyEnrolledException')
 const LessonNotFoundException = require('../../exceptions/lesson/LessonNotFoundException')
 const LessonNotInCourseException = require('../../exceptions/lesson/LessonNotInCourseException')
 const NotEnrolledException = require('../../exceptions/progress/NotEnrolledException')
+const InvalidAccessCodeException = require('../../exceptions/course/InvalidAccessCodeException')
 
 
-const enrollStudent = async(courseId, studentId) => {
-    const course = Course.findById(courseId)
+const enrollStudent = async(courseId, studentId, accessCode) => {
+    const course = await Course.findById(courseId)
     if(!course){
         throw new CourseNotFoundException()
+    }
+
+    if(course.isPrivate){
+        if(!accessCode || accessCode.toUpperCase() !== course.accessCode){
+            throw new InvalidAccessCodeException()
+        }
     }
 
     try {
@@ -58,14 +66,14 @@ const getProgress = async (courseId, studentId) => {
 }
 
 const getAllProgressByStudent = async (studentId) => {
-    return await Progress.find({ student: studentId })
+    const progressList = await Progress.find({ student: studentId })
         .populate({
-            path:'course',
-            populate:{
-                path:'modules',
-                populate:{
-                    path:'lessons',
-                    select:'name'
+            path: 'course',
+            populate: {
+                path: 'modules',
+                populate: {
+                    path: 'lessons',
+                    select: 'name'
                 }
             }
         })

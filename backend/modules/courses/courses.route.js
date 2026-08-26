@@ -16,9 +16,11 @@ courses.get('/courses/:id/content', courseController.getCourseWithContent)
 
 courses.post('/courses', verifyToken, restrictTo('teacher', 'admin'), courseController.createCourse)
 courses.post('/courses/:id/image', verifyToken, restrictTo('teacher', 'admin'), upload.single('image'), courseController.uploadCourseImage)
+courses.post('/courses/find-by-code', verifyToken, courseController.findByAccessCode)
 
 courses.patch('/courses/:id', verifyToken, restrictTo('teacher', 'admin'), courseController.updateCourse)
 courses.patch('/courses/:id/toggle-publish', verifyToken, restrictTo('teacher', 'admin'), courseController.togglePublish)
+courses.patch('/courses/:id/toggle-private', verifyToken, restrictTo('teacher', 'admin'), courseController.togglePrivate)
 
 courses.delete('/courses/:id', verifyToken, restrictTo('teacher', 'admin'), courseController.deleteCourse)
 

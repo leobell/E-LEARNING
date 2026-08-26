@@ -4,9 +4,10 @@ const ProgressNotFoundException = require('../../exceptions/progress/ProgressNot
 const enroll = async(req, res, next) => {
     try {
         const { courseId } = req.params
+        const { accessCode } = req.body
         const studentId = req.user.id
 
-        const progress = await progressService.enrollStudent(courseId, studentId)
+        const progress = await progressService.enrollStudent(courseId, studentId, accessCode)
 
         res.status(201)
             .json({
@@ -79,11 +80,12 @@ const unenroll = async (req, res, next) => {
         const { courseId } = req.params
         const studentId = req.user.id
 
-        await progressService.unenrollFromCourse(courseId, studentId)
+        const progress = await progressService.unenrollFromCourse(courseId, studentId)
 
         res.status(200).json({
             statusCode: 200,
-            message: 'Unenrolled successfully'
+            message: 'Unenrolled successfully',
+            progress
         })
     } catch (e) {
         next(e)

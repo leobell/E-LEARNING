@@ -4,7 +4,7 @@ import { useAuth } from "../../context/auth/AuthContext"
 import { useToast } from "../../context/toast/ToastContext"
 import Spinner from "../../components/spinner/Spinner"
 import { useParams, useNavigate, Link } from "react-router-dom"
-import { getCourseForLearning, createCourse, updateCourse, uploadCourseImage, deleteCourse, togglePublish } from "../../services/courses.service"
+import { getCourseForLearning, createCourse, updateCourse, uploadCourseImage, deleteCourse, togglePublish, togglePrivate } from "../../services/courses.service"
 import { createModule, updateModule, deleteModule } from "../../services/module.service"
 import { createLesson, updateLesson, deleteLesson, uploadLessonVideo } from "../../services/lessons.service"
 
@@ -60,7 +60,9 @@ const CourseEditor = () => {
           description:data.course.description,
           category:data.course.category,
           urlImg: data.course.urlImg,
-          isPublished: data.course.isPublished
+          isPublished: data.course.isPublished,
+          isPrivate: data.course.isPrivate,
+          accessCode: data.course.accessCode
         })
         setModules(data.course.modules)
       } catch (e) {
@@ -313,6 +315,16 @@ const CourseEditor = () => {
     
   }
 
+  const handleTogglePrivate = async() => {
+    try {
+      const data = await togglePrivate(id, token)
+      setFormData({ ...formData, isPrivate: data.updatedCourse.isPrivate, accessCode: data.updatedCourse.accessCode })
+      showToast(data.message)
+    } catch (e) {
+      showToast(e.message, 'error')
+    }
+  }
+
   if(isLoading){
     return <Spinner />
   }
@@ -348,6 +360,52 @@ const CourseEditor = () => {
             >
               {formData.isPublished ? 'Rendi bozza' : 'Pubblica corso'}
             </button>
+          </div>
+        )}
+
+        {isEditMode && (
+          <div className="bg-surface rounded-lg p-4 mb-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-semibold text-primary-dark">
+                  {formData.isPrivate ? 'Corso Privato' : 'Corso Aperto'}
+                </p>
+                <p className="text-sm text-gray-500">
+                  {formData.isPrivate 
+                  ? 'Solo chi ha il codice può iscriversi'
+                  : 'Chiunque può iscriversi liberamente'}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleTogglePrivate}
+                className={`px-4 py-2 rounded-lg text-sm font-semibold ${
+                    formData.isPrivate
+                        ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                        : 'bg-primary text-white hover:bg-primary-dark'
+                }`}
+              >
+                {formData.isPrivate ? 'Rendi aperto' : 'Rendi privato'}
+              </button>
+            </div>
+            {formData.isPrivate && formData.accessCode && (
+              <div className="mt-3 bg-primary/5 border border-primary/20 rounded-lg p-3 flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-gray-500">Codice di accesso</p>
+                  <p className="font-mono font-bold text-primary-dark text-lg">{formData.accessCode}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(formData.accessCode)
+                    showToast('Codice copiato')
+                  }}
+                  className="text-xs text-primary hover:underline"
+                >
+                  Copia
+                </button>
+              </div>
+            )}
           </div>
         )}
 

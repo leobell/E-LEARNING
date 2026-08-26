@@ -17,12 +17,14 @@ const getMyProgress = async (token) => {
     return data
 }
 
-const enrollInCourse = async(idCourse, token) => {
+const enrollInCourse = async(idCourse, token, accessCode) => {
     const response = await apiFetch(`${API_URL}/courses/${idCourse}/enroll`,{
         method:'POST',
         headers:{
-            'Authorization':`Bearer ${token}`
-        }
+            'Authorization':`Bearer ${token}`,
+            'Content-Type':'application/json'
+        },
+        body: JSON.stringify({ accessCode })
     })
 
     const data = await response.json()

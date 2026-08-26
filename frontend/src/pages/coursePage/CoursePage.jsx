@@ -26,7 +26,9 @@ const CoursePage = () => {
   const [reviewForm, setReviewForm] = useState({ rating: 0, comment: '' })
   const [submittingReview, setSubmittingReview] = useState(false)
   const [editingReviewId, setEditingReviewId] = useState(null)
-  
+  const [accessCode, setAccessCode] = useState('')
+  const [showCodeInput, setShowCodeInput] = useState(false)
+
   useEffect(() => {
     const fetchReviews = async() => {
       try {
@@ -97,14 +99,19 @@ const CoursePage = () => {
       return
     }
 
+    if (course.isPrivate && !showCodeInput) {
+      setShowCodeInput(true)
+      return
+    }
+
     setEnrolling(true)
-    setError('')
 
     try {
-      await enrollInCourse(id, token)
+      await enrollInCourse(id, token, accessCode)
       setIsEnrolled(true)
+      showToast('Iscrizione avvenuta con successo')
     } catch (e) {
-      setError(e.message)
+      showToast(e.message, 'error')
     } finally {
       setEnrolling(false)
     }
@@ -168,6 +175,12 @@ const CoursePage = () => {
           className="w-full h-64 object-cover rounded-lg mb-5" 
         />
         <h1 className="text-3xl font-bold text-primary-dark mb-2">{course.name}</h1>
+
+        {course.isPrivate && (
+          <span className="inline-block bg-yellow-100 text-yellow-700 text-xs font-semibold px-3 py-1 rounded-full mb-2 mr-2">
+            🔒 Corso privato
+          </span>
+        )}
 
         <span className="inline-block bg-primary/10 text-primary text-xs font-semibold px-3 py-1 rounded-full mb-2">
           {course.category}
@@ -242,13 +255,28 @@ const CoursePage = () => {
                 Vai al corso
               </button>
             ) : (
-              <button
-                onClick={handleEnroll}
-                disabled={enrolling}
-                className="bg-primary text-white px-6 py-3 rounded-lg font-semibold hover:bg-primary-dark disabled:opacity-50 shadow-lg"
-              >
-                {enrolling ? 'Iscrizione in corso...' : 'Iscriviti'}
-              </button>
+              <>
+                {showCodeInput && (
+                  <input
+                    type="text"
+                    placeholder="Inserisci il codice di accesso"
+                    value={accessCode}
+                    onChange={(e) => setAccessCode(e.target.value)}
+                    className="border-2 border-primary/20 rounded-lg px-4 py-2 text-center font-mono uppercase shadow-lg"
+                  />
+                )}
+                <button
+                  onClick={handleEnroll}
+                  disabled={enrolling}
+                  className="bg-primary text-white px-6 py-3 rounded-lg font-semibold hover:bg-primary-dark disabled:opacity-50 shadow-lg"
+                >
+                  {enrolling
+                    ? 'Iscrizione in corso...'
+                    : course.isPrivate && !showCodeInput
+                      ? 'Inserisci codice di accesso'
+                      : 'Iscriviti'}
+                </button>
+              </>
             )}
           </div>
         </div>

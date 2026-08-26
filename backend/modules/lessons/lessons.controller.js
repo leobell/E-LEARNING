@@ -129,7 +129,6 @@ const deleteLesson = async (req, res, next) => {
                 deletedLesson
             })
     } catch (e) {
-        console.log(e)
         next(e)
     }
 }

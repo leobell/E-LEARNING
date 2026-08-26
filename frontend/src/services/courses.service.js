@@ -169,6 +169,42 @@ const togglePublish = async(id, token) => {
     return data
 }
 
+const togglePrivate = async(id, token) => {
+    const response = await fetch(`${API_URL}/courses/${id}/toggle-private`, {
+        method: 'PATCH',
+        headers:{
+            'Authorization': `Bearer ${token}`
+        }
+    })
+
+    const data = await response.json()
+
+    if(!response.ok){
+        throw new Error(data.message || 'Failed to toggle privacy')
+    }
+
+    return data
+}
+
+const findByAccessCode = async (code, token) => {
+    const response = await fetch(`${API_URL}/courses/find-by-code`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ code })
+    })
+
+    const data = await response.json()
+
+    if (!response.ok) {
+        throw new Error(data.message || 'Course not found')
+    }
+
+    return data
+}
+
 export { 
     getLatestCourses, 
     getCourseWithContent, 
@@ -179,5 +215,7 @@ export {
     deleteCourse,
     uploadCourseImage,
     getCourseForLearning,
-    togglePublish
+    togglePublish,
+    togglePrivate,
+    findByAccessCode
 }

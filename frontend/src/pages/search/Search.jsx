@@ -1,12 +1,19 @@
 import { useState, useEffect } from "react"
+import { useAuth } from "../../context/auth/AuthContext"
+import { useToast } from "../../context/toast/ToastContext"
 import { searchCourses } from "../../services/courses.service"
 import Spinner from "../../components/spinner/Spinner"
 import ErrorAlert from "../../components/errorAlert/ErrorAlert"
 import CourseCard from "../../components/courseCard/CourseCard"
 import { X, ArrowLeft } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { findByAccessCode } from '../../services/courses.service'
 
 const Search = () => {
+  const { token } = useAuth()
+  const { showToast } = useToast()
+  const navigate = useNavigate()
+
   const [query, setQuery] = useState('')
   const [courses, setCourses] = useState([])
   const [isLoading, setIsLoading] = useState(true)
@@ -15,7 +22,26 @@ const Search = () => {
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [totalResults, setTotalResults] = useState(0)
+  const [accessCodeInput, setAccessCodeInput] = useState('')
+  const [searchingCode, setSearchingCode] = useState(false)
 
+  const handleFindByCode = async (e) => {
+    e.preventDefault()
+
+    if (!accessCodeInput.trim()) return
+
+    setSearchingCode(true)
+
+    try {
+      const data = await findByAccessCode(accessCodeInput, token)
+      navigate(`/courses/${data.courseId}`)
+    } catch (e) {
+      showToast(e.message, 'error')
+    } finally {
+      setSearchingCode(false)
+    }
+  }
+  
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       const fetchResults = async() => {
@@ -44,13 +70,33 @@ const Search = () => {
   }, [query, category])
 
   return (
-    <div className="min-h-screen bg-background">
-      
+    <div className="min-h-screen bg-background">     
       <div className="max-w-6xl mx-auto px-4 py-8">
         <Link to="/" className="inline-flex items-center gap-1 text-sm text-primary hover:underline mb-4">
           <ArrowLeft className="w-4 h-4" />
           Torna alla home
         </Link>
+
+        <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 mb-6">
+          <p className="text-sm font-medium text-primary-dark mb-2">Hai un codice di accesso a un corso privato?</p>
+          <form onSubmit={handleFindByCode} className="flex gap-2">
+            <input
+              type="text"
+              placeholder="Inserisci il codice"
+              value={accessCodeInput}
+              onChange={(e) => setAccessCodeInput(e.target.value)}
+              className="border-2 border-primary/20 rounded-lg px-4 py-2 font-mono uppercase flex-1"
+            />
+            <button
+              type="submit"
+              disabled={searchingCode}
+              className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-primary-dark disabled:opacity-50"
+            >
+              {searchingCode ? '...' : 'Vai al corso'}
+            </button>
+          </form>
+        </div>
+
         <input 
           type="text"
           placeholder="Cerca un corso"

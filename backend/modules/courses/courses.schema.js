@@ -39,6 +39,13 @@ const courseSchema = new mongoose.Schema({
     isPublished: {
         type: Boolean,
         default: false
+    },
+    isPrivate : {
+        type: Boolean,
+        default: false
+    },
+    accessCode : {
+        type: String
     }
 }, { timestamps: true, strict: true })
 
