@@ -6,7 +6,8 @@ const PORT = process.env.PORT
 const server = express()
 
 // middlewares
-const errorHandler = require('./middlewares/errors/errorHandler') 
+const errorHandler = require('./middlewares/errors/errorHandler')
+const { apiLimiter } = require('./middlewares/rateLimiter/rateLimiter')
 
 // routes
 const userRoutes = require('./modules/users/users.route')
@@ -24,6 +25,7 @@ server.use(cors({
 
 server.use(express.json())
 
+server.use(apiLimiter)
 server.use('/', userRoutes)
 server.use('/', authRoute)
 server.use('/', courseRoute)

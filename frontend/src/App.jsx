@@ -14,6 +14,7 @@ import Navbar from "./components/navbar/Navbar"
 import Footer from "./components/footer/Footer"
 import Profile from "./pages/profile/Profile"
 import ResetPassword from "./pages/resetPassword/ResetPassword"
+import NotFound from "./pages/notFound/NotFound"
 
 
 const App = () => {
@@ -48,6 +49,7 @@ const App = () => {
           <Route path="/teacher/courses/:id/edit" element={<CourseEditor />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
       <Footer />

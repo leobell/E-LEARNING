@@ -5,6 +5,7 @@ import { getMyCourses } from "../../services/courses.service"
 import Spinner from "../../components/spinner/Spinner"
 import ErrorAlert from "../../components/errorAlert/ErrorAlert"
 import { BookOpen, Users, FileText } from "lucide-react"
+import usePageTitle from "../../hooks/usePageTitle"
 
 const TeacherCourses = () => {
   const { token, user } = useAuth()
@@ -12,6 +13,8 @@ const TeacherCourses = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
   
+  usePageTitle('I tuoi corsi')
+
   const getGreetings = () => {
     const hour = new Date().getHours()
     if (hour < 12) return 'Buongiorno'

@@ -5,6 +5,7 @@ import { Link } from "react-router-dom"
 import Spinner from "../../components/spinner/Spinner"
 import ErrorAlert from "../../components/errorAlert/ErrorAlert"
 import { BookOpen, CheckCircle, Award } from "lucide-react"
+import usePageTitle from "../../hooks/usePageTitle"
 
 const Dashboard = () => {
 
@@ -12,6 +13,8 @@ const Dashboard = () => {
     const [progressList, setProgressList] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
+
+    usePageTitle('Dashboard')
 
     const getGreetings = () => {
         const hour = new Date().getHours()

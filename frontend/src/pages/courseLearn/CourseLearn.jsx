@@ -6,6 +6,7 @@ import { getCourseForLearning } from "../../services/courses.service"
 import { completeLesson, getMyProgress, unenrollFromCourse } from "../../services/progress.service"
 import { useToast } from "../../context/toast/ToastContext"
 import { Trophy } from 'lucide-react'
+import usePageTitle from "../../hooks/usePageTitle"
 
 const CourseLearn = () => {
   const { id } = useParams()
@@ -21,6 +22,8 @@ const CourseLearn = () => {
   const [completing, setCompleting] = useState(false)
   const [confirmUnenroll, setConfirmUnenroll] = useState(false)
   const navigate = useNavigate()
+
+  usePageTitle('Corso')
 
   useEffect(() => {
     const fetchData = async() => {

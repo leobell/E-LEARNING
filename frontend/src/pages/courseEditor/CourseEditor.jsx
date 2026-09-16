@@ -7,6 +7,7 @@ import { useParams, useNavigate, Link } from "react-router-dom"
 import { getCourseForLearning, createCourse, updateCourse, uploadCourseImage, deleteCourse, togglePublish, togglePrivate } from "../../services/courses.service"
 import { createModule, updateModule, deleteModule } from "../../services/module.service"
 import { createLesson, updateLesson, deleteLesson, uploadLessonVideo } from "../../services/lessons.service"
+import usePageTitle from "../../hooks/usePageTitle"
 
 const CourseEditor = () => {
   const { id } = useParams()
@@ -48,6 +49,8 @@ const CourseEditor = () => {
   const [videoFile, setVideoFile] = useState(null)
   const [uploadingVideo, setUploadingVideo] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
+
+  usePageTitle('Editor corso')
 
   useEffect(() => {
     if(!isEditMode) return

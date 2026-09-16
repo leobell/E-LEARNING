@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /profile
+Disallow: /teacher
+Disallow: /auth
+Disallow: /reset-password
+
+Sitemap: https://e-learning-indol-phi.vercel.app/sitemap.xml

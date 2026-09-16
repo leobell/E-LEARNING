@@ -7,13 +7,16 @@ import Hero from "../../components/hero/Hero"
 import Features from "../../components/features/Features"
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "../../context/auth/AuthContext"
+import usePageTitle from "../../hooks/usePageTitle"
 
 const Home = () => {
   const [courses, setCourses] = useState([])
-  const [isloading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
   const navigate = useNavigate()
   const { user } = useAuth()
+
+  usePageTitle('Home')
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -27,7 +30,7 @@ const Home = () => {
       }
     }
 
-    fetchCourses( )
+    fetchCourses()
 
   }, [user])
 
@@ -40,11 +43,15 @@ const Home = () => {
 
           <ErrorAlert message={error} />
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          {isLoading ? (
+            <Spinner />
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {courses.map((course) => (
-                  <CourseCard key={course._id} course={course} />
+                <CourseCard key={course._id} course={course} />
               ))}
-          </div>
+            </div>
+          )}
       </div>
       {!user && (
         <div className="bg-primary/5 py-12 text-center">

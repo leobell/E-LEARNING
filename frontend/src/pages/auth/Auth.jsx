@@ -6,6 +6,7 @@ import { useToast } from "../../context/toast/ToastContext"
 import { decodeToken } from "../../utils/token"
 import ErrorAlert from "../../components/errorAlert/ErrorAlert"
 import authImage from "../../assets/auth-workplace.png"
+import usePageTitle from "../../hooks/usePageTitle"
 
 const Auth = () => {
     const [isLogin, setIsLogin] = useState(true)
@@ -28,6 +29,9 @@ const Auth = () => {
     const [forgotEmail, setForgotEmail] = useState('')
     const [sendingReset, setSendingReset] = useState(false)
     const { showToast } = useToast()
+
+    usePageTitle('Accedi')
+    
 
     const afterAuthSuccess = (token) => {
         const decodedUser = decodeToken(token)

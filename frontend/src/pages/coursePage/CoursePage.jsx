@@ -9,6 +9,7 @@ import { BookOpen } from 'lucide-react'
 import { useToast } from "../../context/toast/ToastContext"
 import StarRating from "../../components/starRating/StarRating"
 import { getReviewsByCourse, createReview, updateReview, deleteReview } from "../../services/reviews.service"
+import usePageTitle from "../../hooks/usePageTitle"
 
 const CoursePage = () => {
   const navigate = useNavigate()
@@ -29,6 +30,9 @@ const CoursePage = () => {
   const [accessCode, setAccessCode] = useState('')
   const [showCodeInput, setShowCodeInput] = useState(false)
 
+
+  usePageTitle(course?.name)
+  
   useEffect(() => {
     const fetchReviews = async() => {
       try {
@@ -132,6 +136,8 @@ const CoursePage = () => {
 
     getCourseContent()
   },[id])
+
+  
 
   useEffect(() => {
     const checkEnrollment = async() => {

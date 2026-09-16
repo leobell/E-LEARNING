@@ -8,6 +8,7 @@ import CourseCard from "../../components/courseCard/CourseCard"
 import { X, ArrowLeft } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { findByAccessCode } from '../../services/courses.service'
+import usePageTitle from "../../hooks/usePageTitle"
 
 const Search = () => {
   const { token } = useAuth()
@@ -24,6 +25,8 @@ const Search = () => {
   const [totalResults, setTotalResults] = useState(0)
   const [accessCodeInput, setAccessCodeInput] = useState('')
   const [searchingCode, setSearchingCode] = useState(false)
+
+  usePageTitle('Esplora corsi')
 
   const handleFindByCode = async (e) => {
     e.preventDefault()

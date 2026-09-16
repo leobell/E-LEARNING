@@ -5,6 +5,7 @@ import { changePassword } from '../../services/auth.service'
 import { useToast } from '../../context/toast/ToastContext'
 import { Eye, EyeOff, ArrowLeft } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import usePageTitle from '../../hooks/usePageTitle'
 
 const Profile = () => {
     const { user, token, saveAuth } = useAuth()
@@ -27,6 +28,8 @@ const Profile = () => {
     const [showNewPassword, setShowNewPassword] = useState(false)
     const [confirmPassword, setConfirmPassword] = useState('')
     const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+
+    usePageTitle('Profilo')
 
     useEffect(() => {
         const fetchMe = async () => {
