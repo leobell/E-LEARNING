@@ -539,6 +539,7 @@ const CourseEditor = () => {
                               <button
                                 type="button"
                                 onClick={() => startEditModule(module)}
+                                aria-label="Modifica modulo"
                                 className="text-sm text-primary hover:underline"
                               >
                                 <Pencil className="w-4 h-4" />
@@ -547,6 +548,7 @@ const CourseEditor = () => {
                               <button
                                 type="button"
                                 onClick={() => handleDeleteModule(module._id)}
+                                aria-label="Elimina modulo"
                                 className="text-sm text-red-500 hover:underline"
                               >
                                 <Trash2 className="w-4 h-4" />

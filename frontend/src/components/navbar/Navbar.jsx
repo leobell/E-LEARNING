@@ -104,6 +104,7 @@ const Navbar = () => {
 
                 <button
                     onClick={() => setMenuOpen(!menuOpen)}
+                    aria-label="Apri menu di navigazione"
                     className="md:hidden text-primary-dark"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
